@@ -11,6 +11,7 @@ def parseArgs():
     parser.add_argument('-o','--output_file',required=False,default = '.')
     parser.add_argument('-c','--chunksize',dest = 'chunksize',default = 10**6,required = False,type=int)
     parser.add_argument('-m','--max_frequency_threshold',default = 0.01,required = False,type=float)
+    parser.add_argument('-F', '--field_list', nargs="*",  type=str, default=['gnomAD_exomes_controls_POPMAX_AF','gnomAD_genomes_controls_POPMAX_AF'])
     args = parser.parse_args()
     return args
     
@@ -25,7 +26,7 @@ def extract_rareVariants_from_dbNSFP(in_f, out_f, size, freqcols , max_frequency
         minutes = (time.time()-t0)/float(60)
         if k&(k-1)==0:
             print 'processed %s*%s rows. Elapsed, %s minutes'%(k+1,size,minutes)
-        ii = (chunk[freqcols].isna()).sum(axis=1)>0
+        ii = (~chunk[freqcols].isna()).sum(axis=1)>0
         chunkf = chunk[ii] 
         max_freq_observed = chunkf[freqcols].max(axis=1)
         chunkf['max_freq_observed'] =  max_freq_observed
@@ -66,16 +67,16 @@ def define_freq_control_fields():
 def main():
     #read args
     args = parseArgs()
-    input_file, output_file, size, max_frequency_threshold = args.input_file, args.output_file, args.chunksize, args.max_frequency_threshold
+    input_file, output_file, size, field_list, max_frequency_threshold = args.input_file, args.output_file, args.chunksize, args.field_list,args.max_frequency_threshold
     if output_file == '.':
         output_file =  './rare_control_variants_'+os.path.basename(input_file).split('.gz')[0]+'.tsv'
 
     # frequency fields of considered control populations. (1000GProj, UK cohort, EPS6500, ExAC, GenomAD)
-    fields = define_freq_control_fields()
-
+    #fields = define_freq_control_fields()
+    #fields = field_list
 
     #process dbNSFP data:
-    rares = extract_rareVariants_from_dbNSFP(in_f=input_file,out_f=output_file,size=size,freqcols=fields,max_frequency_threshold = max_frequency_threshold)
+    rares = extract_rareVariants_from_dbNSFP(in_f=input_file,out_f=output_file,size=size,freqcols=field_list,max_frequency_threshold = max_frequency_threshold)
 
 
 

@@ -56,7 +56,7 @@ unzip -p $dbZip $base\_variant.chr1.gz \
 
 
 echo BGZIP $db
-bgzip $db
+bgzip $db -@ 4
 
 echo TABIX $db.gz
 tabix -s 1 -b 2 -e 2 $db.gz
