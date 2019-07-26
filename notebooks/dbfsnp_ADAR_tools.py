@@ -73,7 +73,7 @@ def condition_set(rareness,clin,pato,rev,columns,cured_ADAR_file="df_cln_info_pa
    
     if clin:
             
-            df=df[['clinvar_id','auto_dominant','auto_recessive', 'x_recessive', 'x_dominant']]
+            df=df[['clinvar_id','auto_dominant','auto_recessive', 'x_recessive', 'x_dominant',"Last reviewed"]]
         
             variants_dbfnsp=variants_dbfnsp.merge(df,how="right",on="clinvar_id",)
     
