@@ -6,7 +6,7 @@ import subprocess
 import pandas as pd
 import numpy as np
 
-def condition_set(rareness,clin,pato,rev,columns,cured_file="df_cln_info_pat2",cured_dbfsnp="~/rare_control_variants_pops_dbNSFP4.0b2a.txt.tsv",homo=None):
+def condition_set(rareness,clin,pato,rev,columns,cured_ADAR_file="df_cln_info_pat2",cured_dbfsnp="~/rare_control_variants_pops_dbNSFP4.0b2a.txt.tsv",homo=None):
     '''
     rareness= binario si tomar el subset con AF segun definimos anteriormente
     homo=vector de homozigosidad minima y maxima para filtrar
