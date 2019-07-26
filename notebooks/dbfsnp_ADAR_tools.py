@@ -1,5 +1,10 @@
 #import dbfsnp_ADAR_tools.py
 import re
+import vcf
+import gzip
+import subprocess
+import pandas as pd
+import numpy as np
 
 def condition_set(rareness,clin,pato,rev,columns,cured_file="df_cln_info_pat2",cured_dbfsnp="~/rare_control_variants_pops_dbNSFP4.0b2a.txt.tsv",homo=None):
     '''
@@ -99,9 +104,8 @@ def impute_classes(dataset,patogenas,benignas=None):
     
 
 def process_proteinwise_scores(word,fun=max):
-	''' para variantes que dan lugar a varias proteinas me quedo con 
+    ''' para variantes que dan lugar a varias proteinas me quedo con 
              el scoremas alto'''
-
 
     if pd.isna(word):
         return(None)
