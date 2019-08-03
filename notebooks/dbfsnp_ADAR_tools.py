@@ -6,7 +6,7 @@ import subprocess
 import pandas as pd
 import numpy as np
 
-def condition_set(rareness,clin,pato,rev,columns,cured_ADAR_file="df_cln_info_pat2",cured_dbfsnp="~/rare_control_variants_pops_dbNSFP4.0b2a.txt.tsv",homo=None):
+def condition_set(rareness,clin,pato,rev,columns,cured_ADAR_file="../src/df_cln_info_pat2",cured_dbfsnp="~/rare_control_variants_pops_dbNSFP4.0b2a.txt.tsv",homo=None):
     '''
     rareness= binario si tomar el subset con AF segun definimos anteriormente
     homo=vector de homozigosidad minima y maxima para filtrar
@@ -146,4 +146,85 @@ def get_ens(obj):
     return(aver)        
 
 
+
+def forge_graph_features(df_rare_pat,target="target"):
+    import igraph
+
+
+
+    biogrid=pd.read_csv("~/BIOGRID/BIOGRID-ORGANISM-3.5.168.tab2/BIOGRID-ORGANISM-Homo_sapiens-3.5.168.tab2.txt",low_memory=False,sep="\t")
+
+
+
+    df_biogrid=biogrid[['Entrez Gene Interactor A','Entrez Gene Interactor B']]
+
+    tuples = [tuple(x) for x in df_biogrid.values]
+    
+    Gm = igraph.Graph.TupleList(tuples, directed = True, edge_attrs = ['weight'])
+
+
+    dbfsnp_gen= pd.read_csv('~/dbNSFP4.0b2_gene.gz', compression='gzip',sep="\t",low_memory=False)
+
+
+    dbfsnp_gen.rename(columns={"Ensembl_gene":"Ensembl_geneid"},inplace=True)
+
+
+
+    df_ensem_to_entres=dbfsnp_gen[["Ensembl_geneid","Entrez_gene_id"]]
+################################################################################
+    df_rare_pat=df_rare_pat.merge(df_ensem_to_entres,how="left",on=["Ensembl_geneid"])
+
+
+
+
+    Gm.vs["pathogenicity"]=[id in df_rare_pat.loc[ df_rare_pat[target]>0]["Entrez_gene_id"] for id in Gm.vs["name"]   ]
+
+
+    #v_patho=[vertex["name"] for vertex in Gm.vs if vertex["pathogenicity"]]
+    v_patho=[vertex for vertex in Gm.vs if vertex["pathogenicity"]]
+
+
+    def get_min_dist_to_patho(Vtx):
+        path_to_patho=[len(path)for path in Vtx.get_shortest_paths(v_patho)]
+        len_to_patho=list(set(path_to_patho))
+
+        len_to_patho.sort()
+        if(len(len_to_patho)<=1):
+            return(-1000)
+
+        return(len_to_patho[1])
+
+
+
+    Gm.vs["dist_to_patho"]=[ get_min_dist_to_patho(Vtx)  for Vtx in Gm.vs]
+
+   
+    def get_number_patho_first_neigh(Vtx):
+        if(len(Gm.neighbors(Vtx))):
+           return(0)
+        sum(Gm.vs[list(set(Gm.neighbors(Vtx)))]["pathogenicity"])
+
+
+    Gm.vs["patho_first_neigh"]=[ get_number_patho_first_neigh(Vtx)  for Vtx in Gm.vs]
+
+
+    Gm.save("bio_grid_graph",format="picklez")
+    
+    
+    
+    susu=pd.DataFrame( {"Entrez_gene_id":Gm.vs["name"] , "net_dis":Gm.vs["dist_to_patho"],"net_nn":Gm.vs["patho_first_neigh"]})
+    
+   # df_rare_pat.Entrez_gene_id.loc[df_rare_pat.Entrez_gene_id.isna()]=-2
+    susu["Entrez_gene_id"]=susu.Entrez_gene_id.astype(str)
+    
+    susu=df_rare_pat.merge(susu,how="left",on=["Entrez_gene_id"])
+    
+    susu.net_dis.fillna(1000,inplace=True)
+    
+    return(susu)
+
+    
+    
+
+    
 
