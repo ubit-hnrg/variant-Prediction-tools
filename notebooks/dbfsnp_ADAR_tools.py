@@ -147,12 +147,12 @@ def get_ens(obj):
 
 
 
-def forge_graph_features(df_rare_pat,target="target"):
+def forge_graph_features(df_rare_pat,target="target",biogrid_dir="~/BIOGRID/BIOGRID-ORGANISM-3.5.168.tab2/BIOGRID-ORGANISM-Homo_sapiens-3.5.168.tab2.txt"):
     import igraph
 
 
 
-    biogrid=pd.read_csv("~/BIOGRID/BIOGRID-ORGANISM-3.5.168.tab2/BIOGRID-ORGANISM-Homo_sapiens-3.5.168.tab2.txt",low_memory=False,sep="\t")
+    biogrid=pd.read_csv(biogrid_dir,low_memory=False,sep="\t")
 
 
 
